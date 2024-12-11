@@ -1,0 +1,54 @@
+blood_type_compatibility:
+  A:
+  - A
+  - A1
+  - A2
+  - AB
+  - A1B
+  - A2B
+  A1:
+  - A
+  - A1
+  - A2
+  - AB
+  - A1B
+  - A2B
+  A1B:
+  - A1B
+  A2:
+  - A
+  - A1
+  - A2
+  - AB
+  - A1B
+  - A2B
+  - B
+  A2B:
+  - A2B
+  - AB
+  AB:
+  - AB
+  - A1B
+  - A2B
+  B:
+  - B
+  - AB
+  - A1B
+  - A2B
+  O:
+  - A
+  - A1
+  - A2
+  - B
+  - AB
+  - A1B
+  - A2B
+  - O
+ethcat_mapping:
+  1: White, Non-Hispanic
+  2: Black, Non-Hispanic
+  4: Hispanic/Latino
+  5: Asian, Non-Hispanic
+  6: Amer Ind/Alaska Native, Non-Hispanic
+  7: Native Hawaiian/Other Pacific Islander, Non-Hispanic
+  9: Multiracial, Non-Hispanic

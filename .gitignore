@@ -1,0 +1,12 @@
+# Ignore logs and temporary files
+*.log
+*.tmp
+*.csv
+*.pkl
+# Ignore directories
+node_modules/
+dist/
+
+# Ignore system files
+.DS_Store
+Thumbs.db
