@@ -119,14 +119,13 @@ def run_simulation(events_per_replication,  replicates, predictor, policy='p1', 
                             case "p1":
                                 survival_probs = []
                                 for recipient in wait_list: 
-                                    print(survival_probs)
                                     if donor.blood in blood_type_compatibility[recipient.blood]: 
                                         new_prediction = predictor.predict_survival_prob(recipient, donor, TARGET_TIME)
                                         survival_probs.append(new_prediction)
                                         del new_prediction
                                     else: 
                                         survival_probs.append(0)
-                                
+                                #print(survival_probs)
                                 if verbose: 
                                     print('survival_probs: ', survival_probs)
                                 best_match_index = np.argmax(survival_probs)
@@ -147,7 +146,8 @@ def run_simulation(events_per_replication,  replicates, predictor, policy='p1', 
                                 for recipient in wait_list:
                                     if donor.blood in blood_type_compatibility[recipient.blood]:
                                         _, function_pred = predictor.predict_survival_prob(recipient, donor, TARGET_TIME, surv_function=True)
-                                        total_ind = current_t-recipient.arrival_time + get_expected_life(function_pred)
+                                        expected_l = 6*get_expected_life(function_pred)
+                                        total_ind = (current_t-recipient.arrival_time) + expected_l
                                         total_times.append(total_ind)
                                     else: 
                                         total_times.append(-1)
@@ -161,6 +161,8 @@ def run_simulation(events_per_replication,  replicates, predictor, policy='p1', 
                                                                                             TARGET_TIME, surv_function=True)
                         
                         mean_survival_time = get_expected_life(predicted_survival_function)
+                        #if current_t > 8*365.25:
+                        #    print(mean_survival_time, current_t-recipient_best.arrival_time, recipient_best.blood)
                         
                         best_patient = wait_list.pop(best_match_index)
                         
@@ -192,7 +194,6 @@ def run_simulation(events_per_replication,  replicates, predictor, policy='p1', 
                         current_t = time
                         new_recipient = rec.Recipient(current_t) 
                         new_recipient.create_recipient(counter)
-                        new_recipient.show()
                         wait_list.append(new_recipient)
                         next_in_leave_the_list.append((new_recipient.time_to_leave_list, new_recipient.reason_to_leave_list, new_recipient.ID))
                         next_in_leave_the_list = sorted(next_in_leave_the_list)

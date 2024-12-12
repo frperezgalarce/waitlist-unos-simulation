@@ -28,7 +28,7 @@ class SurvivalPredictionModel:
         except Exception as e:
             print(f"Error loading model: {e}")
 
-    def predict_survival_prob(self, patient, donor, target_time, verbose=True, surv_function=False):
+    def predict_survival_prob(self, patient, donor, target_time, verbose=False, surv_function=False):
         """
         Predict survival probability based on patient and donor compatibility.
         :param patient: Patient data (e.g., features or characteristics).
