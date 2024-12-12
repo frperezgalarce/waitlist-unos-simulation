@@ -44,8 +44,16 @@ class Event:
                 all_events.append((t2, next_event2, counter))
                 event2.pop(0)
                 event1.pop(0)
-                
-        return all_events
+        
+        #return all_events
+        sorted_events = []
+        current_t = 0
+        for e in all_events:
+            (t, event, counter) = e
+            current_t = current_t + t
+            sorted_events.append((current_t, event, counter))
+            
+        return sorted_events
     
     def create_events(self, r):
         self.generate_events(r)

@@ -93,12 +93,12 @@ def run_simulation(events_per_replication,  replicates, predictor, policy='p1', 
                 (time_aux, _, _)  = events.list_of_events[0]
                 (time2_aux, _, _) = next_in_leave_the_list[0]
                 
-                if time_aux + current_t < time2_aux:
+                if time_aux  < time2_aux:
                     (time, event_type, counter)  = events.list_of_events.pop(0)
                     ID = None
-                    pbar.update(time)
+                    pbar.update(time-current_t)
                     if verbose:
-                        print(time+current_t, event_type, ID)
+                        print(time, event_type, ID)
                 else: 
                     (time, event_type, ID) = next_in_leave_the_list.pop(0)
                     if verbose: 
@@ -108,7 +108,7 @@ def run_simulation(events_per_replication,  replicates, predictor, policy='p1', 
                 #print(time, event_type)         
                 match event_type:
                     case "new_donor":
-                        current_t += time
+                        current_t = time
                         donor = don.Donor(current_t)
                         donor.create_donor(counter)
                         
@@ -119,11 +119,18 @@ def run_simulation(events_per_replication,  replicates, predictor, policy='p1', 
                             case "p1":
                                 survival_probs = []
                                 for recipient in wait_list: 
+                                    print(survival_probs)
                                     if donor.blood in blood_type_compatibility[recipient.blood]: 
-                                        survival_probs.append(predictor.predict_survival_prob(recipient, donor, TARGET_TIME))
+                                        new_prediction = predictor.predict_survival_prob(recipient, donor, TARGET_TIME)
+                                        survival_probs.append(new_prediction)
+                                        del new_prediction
                                     else: 
                                         survival_probs.append(0)
+                                
+                                if verbose: 
+                                    print('survival_probs: ', survival_probs)
                                 best_match_index = np.argmax(survival_probs)
+                                
                             case "p2":                
                                 arrival_times = []
                                 for recipient in wait_list: 
@@ -131,7 +138,10 @@ def run_simulation(events_per_replication,  replicates, predictor, policy='p1', 
                                         arrival_times.append(recipient.arrival_time)
                                     else: 
                                         arrival_times.append(current_t)
+                                if verbose: 
+                                    print('arrival_times: ', arrival_times)
                                 best_match_index = np.argmin(arrival_times)
+                                
                             case "p3":        
                                 total_times = []           
                                 for recipient in wait_list:
@@ -141,6 +151,8 @@ def run_simulation(events_per_replication,  replicates, predictor, policy='p1', 
                                         total_times.append(total_ind)
                                     else: 
                                         total_times.append(-1)
+                                if verbose: 
+                                    print('total_times: ', total_times)
                                 best_match_index = np.argmax(total_times)
                             
                         recipient_best = wait_list[best_match_index]
@@ -169,14 +181,18 @@ def run_simulation(events_per_replication,  replicates, predictor, policy='p1', 
                         
                         
                         if current_t > 8*365.25:
+                            initial_size = len(df)
                             df.loc[len(df)] = [r, best_patient.ethcat, best_patient.gender, best_patient.waiting_time, mean_survival_time, current_t]
                             released_recipients.append(best_patient)
                             num_matched_patients += 1
+                            if initial_size==len(df): 
+                                raise ValueError('There is not an increment in the data frame len.')
                     
                     case "new_recipient":            
-                        current_t += time
+                        current_t = time
                         new_recipient = rec.Recipient(current_t) 
                         new_recipient.create_recipient(counter)
+                        new_recipient.show()
                         wait_list.append(new_recipient)
                         next_in_leave_the_list.append((new_recipient.time_to_leave_list, new_recipient.reason_to_leave_list, new_recipient.ID))
                         next_in_leave_the_list = sorted(next_in_leave_the_list)
