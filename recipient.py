@@ -22,6 +22,7 @@ class Recipient:
         self.time_matched = None
         self.time_left_unmatched = None
         self.replicate_id = None
+        self.mean_survival_time = None
         
     def show(self):
         """
