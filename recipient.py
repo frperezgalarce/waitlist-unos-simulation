@@ -18,6 +18,10 @@ class Recipient:
         self.time_to_leave_list = None
         self.reason_to_leave_list = None
         self.time_to_sick_to_transplant = time_to_sick_to_transplant
+        self.event = "joined_waitlist"
+        self.time_matched = None
+        self.time_left_unmatched = None
+        self.replicate_id = None
         
     def show(self):
         """

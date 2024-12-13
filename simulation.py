@@ -8,7 +8,8 @@ import yaml
 from event import Event
 from tqdm import tqdm
 
-yaml_file_path = "C:/Users/HP/Desktop/UNOS data/codes/simulation-waitline-unos/mapping_data.yaml"
+#yaml_file_path = "C:/Users/HP/Desktop/UNOS data/codes/simulation-waitline-unos/mapping_data.yaml"
+yaml_file_path = "/Users/felipesimon/UMN/Research/KidneyFailure/waitlist-unos-simulation/mapping_data.yaml"
 with open(yaml_file_path, "r") as file:
     loaded_data = yaml.safe_load(file)
 
@@ -59,7 +60,7 @@ def get_probability_by_ethinicy(df_waiting_time_no, df_waiting_time_ll, df_waiti
     df_result = pd.DataFrame({'result': result})
     return df_result
 
-def run_simulation(events_per_replication,  replicates, predictor, policy='p1', T=365.25*30,
+def run_simulation(events_per_replication, predictor, policy='p1', T=365.25*30,
                    TARGET_TIME=5*365.25, verbose=False, 
                    time_before_starting_simulation=0):
     
@@ -75,9 +76,9 @@ def run_simulation(events_per_replication,  replicates, predictor, policy='p1', 
     average_waiting_times = []
     number_of_matches_list = []
     released_recipients = []
+    all_recipients = []
     
-    for r in range(replicates):
-        events = events_per_replication[r] 
+    for r, events in events_per_replication.items():
         print('Replicate #', str(r))
         wait_list = []  # Initialize an empty waitlist for each replicate
         leave_list = []
@@ -85,6 +86,9 @@ def run_simulation(events_per_replication,  replicates, predictor, policy='p1', 
         total_waiting_time = 0  # Track the total waiting time for this replicate
         num_matched_patients = 0  # Track the number of matched patients
         current_t = 0  # Start time    
+        for p in wait_list:
+            p.replicate_id = r
+            all_recipients.append(p)
                     
         next_in_leave_the_list = initialize_waitlist(wait_list, next_in_leave_the_list, time_before_starting_simulation)
         
@@ -165,6 +169,8 @@ def run_simulation(events_per_replication,  replicates, predictor, policy='p1', 
                         #    print(mean_survival_time, current_t-recipient_best.arrival_time, recipient_best.blood)
                         
                         best_patient = wait_list.pop(best_match_index)
+                        best_patient.event = "matched_with_kidney"
+                        best_patient.time_matched = current_t
                         
                         next_leave_time = [(a, b, c) for (a, b, c) in next_in_leave_the_list if c==best_patient.ID]
                         
@@ -194,6 +200,8 @@ def run_simulation(events_per_replication,  replicates, predictor, policy='p1', 
                         current_t = time
                         new_recipient = rec.Recipient(current_t) 
                         new_recipient.create_recipient(counter)
+                        new_recipient.replicate_id = r
+                        all_recipients.append(new_recipient)
                         wait_list.append(new_recipient)
                         next_in_leave_the_list.append((new_recipient.time_to_leave_list, new_recipient.reason_to_leave_list, new_recipient.ID))
                         next_in_leave_the_list = sorted(next_in_leave_the_list)
@@ -206,9 +214,11 @@ def run_simulation(events_per_replication,  replicates, predictor, policy='p1', 
                         next_leave_time = [p for p in wait_list if p.ID==ID]
                         _index = wait_list.index(next_leave_time[0])   
                         out_of_list = wait_list.pop(_index)
+                        out_of_list.event = "left_unmatched"
                         leave_list.append(out_of_list)
                         waiting_time = current_t - out_of_list.arrival_time   
                         out_of_list.waiting_time = waiting_time
+                        out_of_list.time_left_unmatched = current_t
                         
                         
                         if current_t > 8*365.25:
@@ -242,4 +252,18 @@ def run_simulation(events_per_replication,  replicates, predictor, policy='p1', 
         else:
             average_waiting_times.append(0)
             
-    return average_waiting_times, number_of_matches_list, df, df_leaves, df_final_list
+    return average_waiting_times, number_of_matches_list, df, df_leaves, df_final_list, all_recipients
+
+
+def all_recipients_to_dataframe(all_recipients, model_name, policy_name):
+    df = pd.DataFrame(columns=['patient_id', 'replicate_id','ethcat', 'gender', 'blood_type', 'arrival_time', 'waiting_time', 'time_matched', 'time_left_unmatched', 'time_to_leave_list', 'reason_to_leave_list', 'time_to_sick_to_transplant', 'last_event' ])
+    for r in all_recipients:
+        df.loc[df.shape[0]] = [r.ID,r.replicate_id, ethcat_mapping[r.ethcat], r.gender, r.blood, r.arrival_time, r.waiting_time, r.time_matched,r.time_left_unmatched, r.time_to_leave_list, r.reason_to_leave_list, r.time_to_sick_to_transplant, r.event]
+    
+    df['policy'] = policy_name
+    df['model'] = model_name
+    df['flag_eight_years'] = 0
+    time_consider = 8*365.25
+    df.loc[(df.arrival_time > time_consider) | (df.time_matched > time_consider) | (df.time_left_unmatched > time_consider), 'flag_eight_years'] = 1
+    return df
+
