@@ -186,6 +186,7 @@ def run_simulation(events_per_replication, predictor, policy='p1', T=365.25*30,
                             total_waiting_time += waiting_time
                             
                         best_patient.waiting_time = waiting_time
+                        best_patient.mean_survival_time = mean_survival_time
                         
                         
                         if current_t > 8*365.25:
@@ -256,9 +257,9 @@ def run_simulation(events_per_replication, predictor, policy='p1', T=365.25*30,
 
 
 def all_recipients_to_dataframe(all_recipients, model_name, policy_name):
-    df = pd.DataFrame(columns=['patient_id', 'replicate_id','ethcat', 'gender', 'blood_type', 'arrival_time', 'waiting_time', 'time_matched', 'time_left_unmatched', 'time_to_leave_list', 'reason_to_leave_list', 'time_to_sick_to_transplant', 'last_event' ])
+    df = pd.DataFrame(columns=['patient_id', 'replicate_id','ethcat', 'gender', 'blood_type', 'arrival_time', 'waiting_time', 'time_matched', 'time_left_unmatched', 'time_to_leave_list', 'reason_to_leave_list', 'time_to_sick_to_transplant', 'last_event', 'mean_survival_time' ])
     for r in all_recipients:
-        df.loc[df.shape[0]] = [r.ID,r.replicate_id, ethcat_mapping[r.ethcat], r.gender, r.blood, r.arrival_time, r.waiting_time, r.time_matched,r.time_left_unmatched, r.time_to_leave_list, r.reason_to_leave_list, r.time_to_sick_to_transplant, r.event]
+        df.loc[df.shape[0]] = [r.ID,r.replicate_id, ethcat_mapping[r.ethcat], r.gender, r.blood, r.arrival_time, r.waiting_time, r.time_matched,r.time_left_unmatched, r.time_to_leave_list, r.reason_to_leave_list, r.time_to_sick_to_transplant, r.event, r.mean_survival_time]
     
     df['policy'] = policy_name
     df['model'] = model_name
