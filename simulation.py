@@ -9,7 +9,7 @@ from event import Event
 from tqdm import tqdm
 
 #yaml_file_path = "C:/Users/HP/Desktop/UNOS data/codes/simulation-waitline-unos/mapping_data.yaml"
-yaml_file_path = "/Users/felipesimon/UMN/Research/KidneyFailure/waitlist-unos-simulation/mapping_data.yaml"
+yaml_file_path = "C:/Users/Admin/Documents/Felipe/waitlist-unos-simulation/mapping_data.yaml"
 with open(yaml_file_path, "r") as file:
     loaded_data = yaml.safe_load(file)
 
